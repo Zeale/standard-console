@@ -22,16 +22,6 @@ import main.alixia.javalibrary.javafx.tools.FXTools;
 
 public class OptionBox extends ScrollPane {
 
-	private Window window;
-
-	public Window getWindow() {
-		return window;
-	}
-
-	public void setWindow(Window window) {
-		this.window = window;
-	}
-
 	public class Menu extends VBox {
 
 		public class FileChooserListing extends MenuListing {
@@ -149,6 +139,8 @@ public class OptionBox extends ScrollPane {
 
 	}
 
+	private Window window;
+
 	private final Color laxColor, activeColor;
 
 	private final VBox box = new VBox();
@@ -179,5 +171,13 @@ public class OptionBox extends ScrollPane {
 	public OptionBox(Color laxColor, Color activeColor) {
 		this.laxColor = laxColor;
 		this.activeColor = activeColor;
+	}
+
+	public Window getWindow() {
+		return window;
+	}
+
+	public void setWindow(Window window) {
+		this.window = window;
 	}
 }

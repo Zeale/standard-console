@@ -66,6 +66,17 @@ import zeale.apps.tools.guis.BasicWindow;
 
 public class StandardConsole extends Console<StandardConsoleUserInput> {
 
+	public final static class App extends Application {
+
+		@Override
+		public void start(Stage primaryStage) throws Exception {
+			StandardConsole console = new StandardConsole();
+			console.getView(primaryStage).show();
+
+		}
+
+	}
+
 	private static abstract class ConsoleWriter extends Writer {
 
 		private volatile boolean closed;
@@ -103,6 +114,214 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			}
 			if (autoflush)
 				flush();
+		}
+
+	}
+
+	public final class EmbeddedStandardConsoleView extends BasicWindow {
+
+		public final class DefaultOptionButton extends OptionButton {
+
+			{
+				options.getChildren().add(this);
+			}
+
+			private DefaultOptionButton(Image icon, Runnable onClicked) {
+				this(new ImageView(icon), onClicked);
+			}
+
+			private DefaultOptionButton(Image icon, String onClicked) {
+				this(new ImageView(icon), onClicked);
+			}
+
+			private DefaultOptionButton(ImageView icon, Runnable onClicked) {
+				super(icon, onClicked);
+			}
+
+			private DefaultOptionButton(ImageView icon, String onClicked) {
+				this(icon, new Runnable() {
+					@Override
+					public void run() {
+						EmbeddedStandardConsoleView.this.send(onClicked);
+					}
+				});
+
+				StandardConsole.this.print("");
+			}
+
+			public void hide() {
+				options.getChildren().remove(this);
+			}
+
+			public void show() {
+				if (!options.getChildren().contains(this))
+					options.getChildren().add(this);
+			}
+
+			public void show(int position) {
+				if (!options.getChildren().contains(this))
+					options.getChildren().add(position, this);
+			}
+
+		}
+
+		// TODO Add scrolling mechanism to option buttons.
+
+		/*
+		 * OPTION BUTTON - for option menu in top right
+		 */
+		public class OptionButton extends Button {
+
+			{
+				setBackground(DEFAULT_NODE_BACKGROUND);
+
+				setPrefSize(32, 32);
+				FXTools.styleInputs(Color.BLACK, Color.WHITE, -1, this);
+			}
+
+			private OptionButton(Image icon, Runnable onClicked) {
+				this(new ImageView(icon), onClicked);
+			}
+
+			private OptionButton(Image icon, String onClicked) {
+				this(new ImageView(icon), onClicked);
+			}
+
+			private OptionButton(ImageView icon, Runnable onClicked) {
+				setGraphic(icon);
+				icon.setFitHeight(16);
+				icon.setFitWidth(16);
+				setOnAction(a -> onClicked.run());
+			}
+
+			private OptionButton(ImageView icon, String onClicked) {
+				this(icon, new Runnable() {
+					@Override
+					public void run() {
+						EmbeddedStandardConsoleView.this.send(onClicked);
+					}
+				});
+			}
+
+			protected final void send() {
+				EmbeddedStandardConsoleView.this.send();
+			}
+
+			protected final void send(String text) {
+				EmbeddedStandardConsoleView.this.send(text);
+			}
+
+		}
+
+		private final TextFlow screen = new TextFlow();
+
+		private final ObservableList<Node> items = FXCollections.synchronizedObservableList(screen.getChildren());
+		// Binding
+		{
+			BindingConversion.bind(StandardConsole.this.getItems(), ConsoleItem::getNode, getItems());
+		}
+
+		private final ScrollPane flow = new ScrollPane(screen);
+		/*
+		 * STYLING RELATED CODE
+		 */
+
+		private final TextArea input = new TextArea();
+
+		private final Button send = new Button("Send");
+		private final VBox options = new VBox(3);
+		{
+			screen.setBackground(DEFAULT_WINDOW_BACKGROUND);
+			flow.setBackground(null);
+			setBackground(FXTools.getBackgroundFromColor(new Color(0.3, 0.3, 0.3, 1)));
+
+			FXTools.styleInputs(Color.BLACK, Color.DIMGRAY, -1, send, input);
+			FXTools.clearScrollPaneBackground(flow);
+
+			AnchorPane.setBottomAnchor(input, 0d);
+			AnchorPane.setLeftAnchor(input, 0d);
+			AnchorPane.setRightAnchor(input, 0d);
+			input.setPrefHeight(200);
+			input.setMaxHeight(200);
+
+			AnchorPane.setTopAnchor(flow, 20d);
+			AnchorPane.setTopAnchor(options, 20d);// Same as flow
+			AnchorPane.setLeftAnchor(flow, 40d);
+			AnchorPane.setRightAnchor(flow, 40d);
+			AnchorPane.setBottomAnchor(flow, 300d);
+
+			AnchorPane.setRightAnchor(options, 2d);
+			input.getStylesheets().add("zeale/apps/tools/console/standard-console.css");
+
+			AnchorPane.setBottomAnchor(send, 135d);
+			AnchorPane.setRightAnchor(send, 75d);
+
+			input.setFont(Font.font("Monospace", 17));
+
+			flow.setFitToHeight(true);
+			flow.setFitToWidth(true);
+		}
+
+		/*
+		 * INITIALIZATION
+		 */
+		{
+			input.textProperty().bindBidirectional(StandardConsole.this.input);
+			input.setOnKeyPressed((a) -> {
+				if (!a.isShiftDown() && a.getCode() == KeyCode.ENTER) {
+					send();
+					a.consume();
+				}
+			});
+			send.setOnAction((a) -> send());
+		}
+
+		{
+			// // When the default channel, (or any other channel that can handle these
+			// // buttons' text), is not selected, these buttons may not work correctly;
+			// (they
+			// // will likely just print out their raw command with the tilde, since nothing
+			// is
+			// // there to handle the text and prevent it from being printed).
+			// new
+			// OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Gear-v1.png"),
+			// () -> send("~open-window settings"));
+			// new
+			// OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Notepad-v1.png"),
+			// () -> send("~set-output-file"));
+			new DefaultOptionButton(
+					Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Channels-v1.png"),
+					() -> channelSelectorMenu.show());
+		}
+
+		private EmbeddedStandardConsoleView() {
+			getChildren().addAll(input, flow, send, options);
+		}
+
+//		{
+//			// When the default channel, (or any other channel that can handle these
+//			// buttons' text), is not selected, these buttons may not work correctly; (they
+//			// will likely just print out their raw command with the tilde, since nothing is
+//			// there to handle the text and prevent it from being printed).
+//			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Gear-v1.png"),
+//					() -> send("~open-window settings"));
+//			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Notepad-v1.png"),
+//					() -> send("~set-output-file"));
+//			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Channels-v1.png"),
+//					() -> channelSelectorMenu.show());
+//		}
+
+		private ObservableList<Node> getItems() {
+			return items;
+		}
+
+		private void send() {
+			send(input.getText());
+			input.setText("");
+		}
+
+		private void send(String text) {
+			StandardConsole.this.send(text);
 		}
 
 	}
@@ -170,216 +389,6 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 	}
 
-	public final class EmbeddedStandardConsoleView extends BasicWindow {
-
-		/*
-		 * OPTION BUTTON - for option menu in top right
-		 */
-		public class OptionButton extends Button {
-
-			{
-				setBackground(DEFAULT_NODE_BACKGROUND);
-
-				setPrefSize(32, 32);
-				FXTools.styleInputs(Color.BLACK, Color.WHITE, -1, this);
-			}
-
-			private OptionButton(Image icon, Runnable onClicked) {
-				this(new ImageView(icon), onClicked);
-			}
-
-			private OptionButton(Image icon, String onClicked) {
-				this(new ImageView(icon), onClicked);
-			}
-
-			private OptionButton(ImageView icon, Runnable onClicked) {
-				setGraphic(icon);
-				icon.setFitHeight(16);
-				icon.setFitWidth(16);
-				setOnAction(a -> onClicked.run());
-			}
-
-			private OptionButton(ImageView icon, String onClicked) {
-				this(icon, new Runnable() {
-
-					@Override
-					public void run() {
-						EmbeddedStandardConsoleView.this.send(onClicked);
-					}
-				});
-			}
-
-			protected final void send(String text) {
-				EmbeddedStandardConsoleView.this.send(text);
-			}
-
-			protected final void send() {
-				EmbeddedStandardConsoleView.this.send();
-			}
-
-		}
-
-		// TODO Add scrolling mechanism to option buttons.
-
-		{
-			// // When the default channel, (or any other channel that can handle these
-			// // buttons' text), is not selected, these buttons may not work correctly;
-			// (they
-			// // will likely just print out their raw command with the tilde, since nothing
-			// is
-			// // there to handle the text and prevent it from being printed).
-			// new
-			// OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Gear-v1.png"),
-			// () -> send("~open-window settings"));
-			// new
-			// OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Notepad-v1.png"),
-			// () -> send("~set-output-file"));
-			new DefaultOptionButton(
-					Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Channels-v1.png"),
-					() -> channelSelectorMenu.show());
-		}
-
-		public final class DefaultOptionButton extends OptionButton {
-
-			private DefaultOptionButton(Image icon, Runnable onClicked) {
-				this(new ImageView(icon), onClicked);
-			}
-
-			private DefaultOptionButton(Image icon, String onClicked) {
-				this(new ImageView(icon), onClicked);
-			}
-
-			private DefaultOptionButton(ImageView icon, Runnable onClicked) {
-				super(icon, onClicked);
-			}
-
-			private DefaultOptionButton(ImageView icon, String onClicked) {
-				this(icon, new Runnable() {
-
-					@Override
-					public void run() {
-						EmbeddedStandardConsoleView.this.send(onClicked);
-					}
-				});
-
-				StandardConsole.this.print("");
-			}
-
-			{
-				options.getChildren().add(this);
-			}
-
-			public void show() {
-				if (!options.getChildren().contains(this))
-					options.getChildren().add(this);
-			}
-
-			public void show(int position) {
-				if (!options.getChildren().contains(this))
-					options.getChildren().add(position, this);
-			}
-
-			public void hide() {
-				options.getChildren().remove(this);
-			}
-
-		}
-
-		private EmbeddedStandardConsoleView() {
-			getChildren().addAll(input, flow, send, options);
-		}
-
-		private final TextFlow screen = new TextFlow();
-		private final ObservableList<Node> items = FXCollections.synchronizedObservableList(screen.getChildren());
-
-		// Binding
-		{
-			BindingConversion.bind(StandardConsole.this.getItems(), ConsoleItem::getNode, getItems());
-		}
-
-		private final ScrollPane flow = new ScrollPane(screen);
-		/*
-		 * STYLING RELATED CODE
-		 */
-
-		private final TextArea input = new TextArea();
-		private final Button send = new Button("Send");
-		private final VBox options = new VBox(3);
-
-		{
-			screen.setBackground(DEFAULT_WINDOW_BACKGROUND);
-			flow.setBackground(null);
-			setBackground(FXTools.getBackgroundFromColor(new Color(0.3, 0.3, 0.3, 1)));
-
-			FXTools.styleInputs(Color.BLACK, Color.DIMGRAY, -1, send, input);
-			FXTools.clearScrollPaneBackground(flow);
-
-			AnchorPane.setBottomAnchor(input, 0d);
-			AnchorPane.setLeftAnchor(input, 0d);
-			AnchorPane.setRightAnchor(input, 0d);
-			input.setPrefHeight(200);
-			input.setMaxHeight(200);
-
-			AnchorPane.setTopAnchor(flow, 20d);
-			AnchorPane.setTopAnchor(options, 20d);// Same as flow
-			AnchorPane.setLeftAnchor(flow, 40d);
-			AnchorPane.setRightAnchor(flow, 40d);
-			AnchorPane.setBottomAnchor(flow, 300d);
-
-			AnchorPane.setRightAnchor(options, 2d);
-			input.getStylesheets().add("zeale/apps/tools/console/standard-console.css");
-
-			AnchorPane.setBottomAnchor(send, 135d);
-			AnchorPane.setRightAnchor(send, 75d);
-
-			input.setFont(Font.font("Monospace", 17));
-
-			flow.setFitToHeight(true);
-			flow.setFitToWidth(true);
-		}
-
-		/*
-		 * INITIALIZATION
-		 */
-		{
-			input.textProperty().bindBidirectional(StandardConsole.this.input);
-			input.setOnKeyPressed((a) -> {
-				if (!a.isShiftDown() && a.getCode() == KeyCode.ENTER) {
-					send();
-					a.consume();
-				}
-			});
-			send.setOnAction((a) -> send());
-		}
-
-//		{
-//			// When the default channel, (or any other channel that can handle these
-//			// buttons' text), is not selected, these buttons may not work correctly; (they
-//			// will likely just print out their raw command with the tilde, since nothing is
-//			// there to handle the text and prevent it from being printed).
-//			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Gear-v1.png"),
-//					() -> send("~open-window settings"));
-//			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Notepad-v1.png"),
-//					() -> send("~set-output-file"));
-//			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Channels-v1.png"),
-//					() -> channelSelectorMenu.show());
-//		}
-
-		private ObservableList<Node> getItems() {
-			return items;
-		}
-
-		private void send() {
-			send(input.getText());
-			input.setText("");
-		}
-
-		private void send(String text) {
-			StandardConsole.this.send(text);
-		}
-
-	}
-
 	// Note to self: This class uses its enclosing instance's properties. Any
 	// classes that extend it should be nested here (for the most part).
 	public final class StandardConsoleView implements Showable, Closable, Fullscreenable, Repositionable, Resizable {
@@ -388,17 +397,6 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 		private final Scene scene = new Scene(root);
 		private Stage stage;
-
-		public void setStage(Stage stage) {
-			this.stage.hide();
-			stage.setScene(scene);
-			this.stage.setScene(null);
-			(this.stage = stage).show();
-		}
-
-		public Stage getStage() {
-			return stage;
-		}
 
 		/*
 		 * CONSTRUCTOR
@@ -417,23 +415,23 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			stage.setScene(scene);
 		}
 
-		/*
-		 * OPTION MENU INITIALIZATION
-		 */
-
 		@Override
 		public void close() {
 			stage.close();
 		}
 
+		public Stage getStage() {
+			return stage;
+		}
+
+		/*
+		 * OPTION MENU INITIALIZATION
+		 */
+
 		@Override
 		public void hide() {
 			stage.hide();
 		}
-
-		/*
-		 * INSTANCE METHODS
-		 */
 
 		@Override
 		public boolean resize(double width, double height) {
@@ -442,6 +440,10 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			return width < stage.getMinWidth() || width > stage.getMaxWidth() || height < stage.getMinHeight()
 					|| height > stage.getMaxHeight();
 		}
+
+		/*
+		 * INSTANCE METHODS
+		 */
 
 		@Override
 		public void setFullscreen(boolean fullscreen) {
@@ -455,26 +457,18 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			return true;
 		}
 
+		public void setStage(Stage stage) {
+			this.stage.hide();
+			stage.setScene(scene);
+			this.stage.setScene(null);
+			(this.stage = stage).show();
+		}
+
 		@Override
 		public void show() {
 			stage.show();
 		}
 
-	}
-
-	public final static class App extends Application {
-
-		@Override
-		public void start(Stage primaryStage) throws Exception {
-			StandardConsole console = new StandardConsole();
-			console.getView(primaryStage).show();
-
-		}
-
-	}
-
-	public static void main(String[] args) {
-		Application.launch(App.class, args);
 	}
 
 	/*
@@ -490,6 +484,10 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 	private static final Function<String, ConsoleItem> simpleConverter = t -> new ConsoleItem().setColor(Color.ORANGE)
 			.setFontSize(20).setText(t);// DO NOT make this into a method reference; it will cause the text objects
 										// inside the TextFlow to be empty.
+
+	public static void main(String[] args) {
+		Application.launch(App.class, args);
+	}
 
 	/*
 	 * FIELDS
@@ -541,29 +539,6 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			defaultChannel, botChannel, rawChannel);
 
 	private final Map<Consumer<?>, Channel<StandardConsoleUserInput>> userMadeHandlers = new HashMap<>(0);
-
-	/**
-	 * Adds a channel to this {@link StandardConsole} which will receive user input
-	 * when selected. The user can select the channel that the user wishes to use
-	 * via a GUI opened by a button on the console window.
-	 * 
-	 * @param name    The name of the channel. This is solely to distinguish between
-	 *                other channels.
-	 * @param handler The {@link String} {@link Consumer} that will handle the
-	 *                user's input. If wanted, this must print text to the console,
-	 *                as the console won't print any input consumed by another
-	 *                channel, by default.
-	 */
-	public void addChannel(String name, Consumer<String> handler) {
-		NamedChannel<StandardConsoleUserInput> channel = new NamedChannel<StandardConsoleUserInput>(name,
-				t -> handler.accept(t.text));
-		channelManager.addChannel(channel);
-		userMadeHandlers.put(handler, channel);
-	}
-
-	public void removeChannel(Consumer<String> handler) {
-		channelManager.removeChannel(userMadeHandlers.remove(handler));
-	}
 
 	private final ChannelSelectorMenu channelSelectorMenu = new ChannelSelectorMenu(this, channelManager);
 
@@ -717,6 +692,24 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 	public StandardConsole() {
 	}
 
+	/**
+	 * Adds a channel to this {@link StandardConsole} which will receive user input
+	 * when selected. The user can select the channel that the user wishes to use
+	 * via a GUI opened by a button on the console window.
+	 *
+	 * @param name    The name of the channel. This is solely to distinguish between
+	 *                other channels.
+	 * @param handler The {@link String} {@link Consumer} that will handle the
+	 *                user's input. If wanted, this must print text to the console,
+	 *                as the console won't print any input consumed by another
+	 *                channel, by default.
+	 */
+	public void addChannel(String name, Consumer<String> handler) {
+		NamedChannel<StandardConsoleUserInput> channel = new NamedChannel<>(name, t -> handler.accept(t.text));
+		channelManager.addChannel(channel);
+		userMadeHandlers.put(handler, channel);
+	}
+
 	private ObservableList<ConsoleItem> getItems() {
 		return items;
 	}
@@ -770,6 +763,10 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 	public void print(String text, Color color, boolean bold, boolean italicized) {
 		write(new ConsoleItem().setText(text).setColor(color).setWeight(ConsoleItem.convertToValidWeight(bold))
 				.setPosture(ConsoleItem.convertToValidPosture(italicized)));
+	}
+
+	public void removeChannel(Consumer<String> handler) {
+		channelManager.removeChannel(userMadeHandlers.remove(handler));
 	}
 
 	private void send(String text) {
