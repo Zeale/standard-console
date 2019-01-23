@@ -13,7 +13,6 @@ import java.util.function.Function;
 
 import org.alixia.chatroom.api.commands.Command;
 import org.alixia.chatroom.api.commands.CommandManager;
-import org.alixia.javalibrary.javafx.images.Images;
 import org.alixia.javalibrary.strings.StringTools;
 
 import javafx.application.Application;
@@ -170,17 +169,14 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 	}
 
-	// Note to self: This class uses its enclosing instance's properties. Any
-	// classes that extend it should be nested here (for the most part).
-	public final class StandardConsoleView implements Showable, Closable, Fullscreenable, Repositionable, Resizable {
+	public final class EmbeddedStandardConsoleView extends BasicWindow {
 
 		/*
 		 * OPTION BUTTON - for option menu in top right
 		 */
-		private final class OptionButton extends Button {
+		public class OptionButton extends Button {
 
 			{
-				options.getChildren().add(this);
 				setBackground(DEFAULT_NODE_BACKGROUND);
 
 				setPrefSize(32, 32);
@@ -207,24 +203,34 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 					@Override
 					public void run() {
-						send(onClicked);
+						EmbeddedStandardConsoleView.this.send(onClicked);
 					}
 				});
+			}
 
-				StandardConsole.this.print("");
+			protected final void send(String text) {
+				EmbeddedStandardConsoleView.this.send(text);
+			}
+
+			protected final void send() {
+				EmbeddedStandardConsoleView.this.send();
 			}
 
 		}
 
+		private EmbeddedStandardConsoleView() {
+			getChildren().addAll(input, flow, send, options);
+		}
+
 		private final TextFlow screen = new TextFlow();
 		private final ObservableList<Node> items = FXCollections.synchronizedObservableList(screen.getChildren());
+
 		// Binding
 		{
 			BindingConversion.bind(StandardConsole.this.getItems(), ConsoleItem::getNode, getItems());
 		}
 
 		private final ScrollPane flow = new ScrollPane(screen);
-
 		/*
 		 * STYLING RELATED CODE
 		 */
@@ -232,25 +238,11 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 		private final TextArea input = new TextArea();
 		private final Button send = new Button("Send");
 		private final VBox options = new VBox(3);
-		private final BasicWindow root = new BasicWindow(input, flow, send, options);
-		private final Scene scene = new Scene(root);
-		private Stage stage;
-
-		public void setStage(Stage stage) {
-			this.stage.hide();
-			stage.setScene(scene);
-			this.stage.setScene(null);
-			(this.stage = stage).show();
-		}
-
-		public Stage getStage() {
-			return stage;
-		}
 
 		{
 			screen.setBackground(DEFAULT_WINDOW_BACKGROUND);
 			flow.setBackground(null);
-			root.setBackground(FXTools.getBackgroundFromColor(new Color(0.3, 0.3, 0.3, 1)));
+			setBackground(FXTools.getBackgroundFromColor(new Color(0.3, 0.3, 0.3, 1)));
 
 			FXTools.styleInputs(Color.BLACK, Color.DIMGRAY, -1, send, input);
 			FXTools.clearScrollPaneBackground(flow);
@@ -293,17 +285,52 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			send.setOnAction((a) -> send());
 		}
 
-		{
-			// When the default channel, (or any other channel that can handle these
-			// buttons' text), is not selected, these buttons may not work correctly; (they
-			// will likely just print out their raw command with the tilde, since nothing is
-			// there to handle the text and prevent it from being printed).
-			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Gear-v1.png"),
-					() -> send("~open-window settings"));
-			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Notepad-v1.png"),
-					() -> send("~set-output-file"));
-			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Channels-v1.png"),
-					() -> channelSelectorMenu.show());
+//		{
+//			// When the default channel, (or any other channel that can handle these
+//			// buttons' text), is not selected, these buttons may not work correctly; (they
+//			// will likely just print out their raw command with the tilde, since nothing is
+//			// there to handle the text and prevent it from being printed).
+//			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Gear-v1.png"),
+//					() -> send("~open-window settings"));
+//			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Notepad-v1.png"),
+//					() -> send("~set-output-file"));
+//			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Channels-v1.png"),
+//					() -> channelSelectorMenu.show());
+//		}
+
+		private ObservableList<Node> getItems() {
+			return items;
+		}
+
+		private void send() {
+			send(input.getText());
+			input.setText("");
+		}
+
+		private void send(String text) {
+			StandardConsole.this.send(text);
+		}
+
+	}
+
+	// Note to self: This class uses its enclosing instance's properties. Any
+	// classes that extend it should be nested here (for the most part).
+	public final class StandardConsoleView implements Showable, Closable, Fullscreenable, Repositionable, Resizable {
+
+		private final EmbeddedStandardConsoleView root = new EmbeddedStandardConsoleView();
+
+		private final Scene scene = new Scene(root);
+		private Stage stage;
+
+		public void setStage(Stage stage) {
+			this.stage.hide();
+			stage.setScene(scene);
+			this.stage.setScene(null);
+			(this.stage = stage).show();
+		}
+
+		public Stage getStage() {
+			return stage;
 		}
 
 		/*
@@ -332,10 +359,6 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			stage.close();
 		}
 
-		private ObservableList<Node> getItems() {
-			return items;
-		}
-
 		@Override
 		public void hide() {
 			stage.hide();
@@ -351,15 +374,6 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			stage.setHeight(height);
 			return width < stage.getMinWidth() || width > stage.getMaxWidth() || height < stage.getMinHeight()
 					|| height > stage.getMaxHeight();
-		}
-
-		private void send() {
-			send(input.getText());
-			input.setText("");
-		}
-
-		private void send(String text) {
-			StandardConsole.this.send(text);
 		}
 
 		@Override
