@@ -219,64 +219,71 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 		}
 
-				{
-		//			// When the default channel, (or any other channel that can handle these
-		//			// buttons' text), is not selected, these buttons may not work correctly; (they
-		//			// will likely just print out their raw command with the tilde, since nothing is
-		//			// there to handle the text and prevent it from being printed).
-		//			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Gear-v1.png"),
-		//					() -> send("~open-window settings"));
-		//			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Notepad-v1.png"),
-		//					() -> send("~set-output-file"));
-					new DefaultOptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Channels-v1.png"),
-							() -> channelSelectorMenu.show());
-				}
-		
-				public final class DefaultOptionButton extends OptionButton {
-		
-					private DefaultOptionButton(Image icon, Runnable onClicked) {
-						this(new ImageView(icon), onClicked);
+		// TODO Add scrolling mechanism to option buttons.
+
+		{
+			// // When the default channel, (or any other channel that can handle these
+			// // buttons' text), is not selected, these buttons may not work correctly;
+			// (they
+			// // will likely just print out their raw command with the tilde, since nothing
+			// is
+			// // there to handle the text and prevent it from being printed).
+			// new
+			// OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Gear-v1.png"),
+			// () -> send("~open-window settings"));
+			// new
+			// OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Notepad-v1.png"),
+			// () -> send("~set-output-file"));
+			new DefaultOptionButton(
+					Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Channels-v1.png"),
+					() -> channelSelectorMenu.show());
+		}
+
+		public final class DefaultOptionButton extends OptionButton {
+
+			private DefaultOptionButton(Image icon, Runnable onClicked) {
+				this(new ImageView(icon), onClicked);
+			}
+
+			private DefaultOptionButton(Image icon, String onClicked) {
+				this(new ImageView(icon), onClicked);
+			}
+
+			private DefaultOptionButton(ImageView icon, Runnable onClicked) {
+				super(icon, onClicked);
+			}
+
+			private DefaultOptionButton(ImageView icon, String onClicked) {
+				this(icon, new Runnable() {
+
+					@Override
+					public void run() {
+						EmbeddedStandardConsoleView.this.send(onClicked);
 					}
-		
-					private DefaultOptionButton(Image icon, String onClicked) {
-						this(new ImageView(icon), onClicked);
-					}
-		
-					private DefaultOptionButton(ImageView icon, Runnable onClicked) {
-						super(icon, onClicked);
-					}
-		
-					private DefaultOptionButton(ImageView icon, String onClicked) {
-						this(icon, new Runnable() {
-		
-							@Override
-							public void run() {
-								EmbeddedStandardConsoleView.this.send(onClicked);
-							}
-						});
-		
-						StandardConsole.this.print("");
-					}
-		
-					{
-						options.getChildren().add(this);
-					}
-		
-					public void show() {
-						if (!options.getChildren().contains(this))
-							options.getChildren().add(this);
-					}
-		
-					public void show(int position) {
-						if (!options.getChildren().contains(this))
-							options.getChildren().add(position, this);
-					}
-					
-					public void hide() {
-						options.getChildren().remove(this);
-					}
-		
-				}
+				});
+
+				StandardConsole.this.print("");
+			}
+
+			{
+				options.getChildren().add(this);
+			}
+
+			public void show() {
+				if (!options.getChildren().contains(this))
+					options.getChildren().add(this);
+			}
+
+			public void show(int position) {
+				if (!options.getChildren().contains(this))
+					options.getChildren().add(position, this);
+			}
+
+			public void hide() {
+				options.getChildren().remove(this);
+			}
+
+		}
 
 		private EmbeddedStandardConsoleView() {
 			getChildren().addAll(input, flow, send, options);
