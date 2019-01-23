@@ -16,6 +16,7 @@ import org.alixia.chatroom.api.commands.CommandManager;
 import org.alixia.javalibrary.javafx.images.Images;
 import org.alixia.javalibrary.strings.StringTools;
 
+import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -233,11 +234,20 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 		private final VBox options = new VBox(3);
 		private final BasicWindow root = new BasicWindow(input, flow, send, options);
 		private final Scene scene = new Scene(root);
-		private final Stage stage = new Stage();
+		private Stage stage;
+
+		public void setStage(Stage stage) {
+			this.stage.hide();
+			stage.setScene(scene);
+			this.stage.setScene(null);
+			(this.stage = stage).show();
+		}
+
+		public Stage getStage() {
+			return stage;
+		}
 
 		{
-			stage.setScene(scene);
-
 			screen.setBackground(DEFAULT_WINDOW_BACKGROUND);
 			flow.setBackground(null);
 			root.setBackground(FXTools.getBackgroundFromColor(new Color(0.3, 0.3, 0.3, 1)));
@@ -264,11 +274,6 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			AnchorPane.setRightAnchor(send, 75d);
 
 			input.setFont(Font.font("Monospace", 17));
-
-			stage.setHeight(800);
-			stage.setWidth(1000);
-			stage.setMinHeight(400);
-			stage.setMinWidth(600);
 
 			flow.setFitToHeight(true);
 			flow.setFitToWidth(true);
@@ -305,6 +310,17 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 		 * CONSTRUCTOR
 		 */
 		private StandardConsoleView() {
+			this(new Stage());
+
+			stage.setHeight(800);
+			stage.setWidth(1000);
+			stage.setMinHeight(400);
+			stage.setMinWidth(600);
+		}
+
+		private StandardConsoleView(Stage stage) {
+			this.stage = stage;
+			stage.setScene(scene);
 		}
 
 		/*
@@ -363,6 +379,21 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			stage.show();
 		}
 
+	}
+
+	public final static class App extends Application {
+
+		@Override
+		public void start(Stage primaryStage) throws Exception {
+			StandardConsole console = new StandardConsole();
+			console.getView(primaryStage).show();
+
+		}
+
+	}
+
+	public static void main(String[] args) {
+		Application.launch(App.class, args);
 	}
 
 	/*
@@ -611,6 +642,10 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 	public StandardConsoleView getView() {
 		return new StandardConsoleView();
+	}
+
+	public StandardConsoleView getView(Stage stage) {
+		return new StandardConsoleView(stage);
 	}
 
 	public PrintWriter getWriter() {
