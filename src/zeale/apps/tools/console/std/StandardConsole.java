@@ -14,7 +14,6 @@ import java.util.function.Function;
 import org.alixia.chatroom.api.commands.Command;
 import org.alixia.chatroom.api.commands.CommandManager;
 import org.alixia.javalibrary.javafx.images.Images;
-import org.alixia.javalibrary.strings.StringTools;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -22,23 +21,16 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCombination;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -46,9 +38,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import main.alixia.javalibrary.javafx.tools.FXTools;
-import zeale.apps.tools.api.backgrounds.RedVelvetBackground;
 import zeale.apps.tools.console.CommandLineInterface.UserInput;
 import zeale.apps.tools.console.Console;
 import zeale.apps.tools.console.interfaces.windows.Closable;
@@ -291,7 +281,7 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			// () -> send("~set-output-file"));
 			new DefaultOptionButton(
 					Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Channels-v1.png"),
-					() -> channelSelectorMenu.show());
+					() -> getChannelSelectorMenu().show());
 		}
 
 		private EmbeddedStandardConsoleView() {
@@ -308,7 +298,7 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 //			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Notepad-v1.png"),
 //					() -> send("~set-output-file"));
 //			new OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Channels-v1.png"),
-//					() -> channelSelectorMenu.show());
+//					() -> getChannelSelectorMenu().show());
 //		}
 
 		private ObservableList<Node> getItems() {
@@ -540,7 +530,12 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 	private final Map<Consumer<?>, Channel<StandardConsoleUserInput>> userMadeHandlers = new HashMap<>(0);
 
-	private final ChannelSelectorMenu channelSelectorMenu = new ChannelSelectorMenu(this, channelManager);
+	private ChannelSelectorMenu channelSelectorMenu;
+
+	public ChannelSelectorMenu getChannelSelectorMenu() {
+		return channelSelectorMenu == null ? (channelSelectorMenu = new ChannelSelectorMenu(this, channelManager))
+				: channelSelectorMenu;
+	}
 
 	/*
 	 * COMMANDS
@@ -645,45 +640,15 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			@Override
 			protected void act(String name, String... args) {
 				try (PrintWriter writer = getWriter()) {
-					new RuntimeException().printStackTrace(writer);
+					new RuntimeException(
+							"A test exception has been created. This trace has been printed to the console.")
+									.printStackTrace(writer);
 				}
 			}
 
 			@Override
 			protected boolean match(String name) {
-				return name.equalsIgnoreCase("test");
-			}
-		});
-
-		privateCommandManager.addCommand(new Command() {
-
-			private final Stage saver = new Stage(StageStyle.UNDECORATED);
-			private final Canvas canvas = new Canvas();
-			private final StackPane canvasWrapper = new StackPane(canvas);
-			private final zeale.apps.tools.api.backgrounds.Background background = new RedVelvetBackground(canvas);
-			private final Scene scene = new Scene(canvasWrapper);
-			{
-				saver.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
-				saver.setFullScreen(true);
-				EventHandler<Event> hideHandler = event -> saver.hide();
-				saver.addEventFilter(KeyEvent.KEY_PRESSED, hideHandler);
-				saver.addEventFilter(MouseEvent.MOUSE_PRESSED, hideHandler);
-				saver.addEventFilter(MouseEvent.MOUSE_RELEASED, hideHandler);
-				canvas.widthProperty().bind(canvasWrapper.widthProperty());
-				canvas.heightProperty().bind(canvasWrapper.heightProperty());
-				saver.setScene(scene);
-			}
-
-			@Override
-			protected void act(String name, String... args) {
-				println("Showing screen saver");
-				saver.show();
-				background.show();
-			}
-
-			@Override
-			protected boolean match(String name) {
-				return StringTools.equalsAnyIgnoreCase(name, "screensaver", "screen-saver", "ss", "scs");
+				return name.equalsIgnoreCase("test-exception");
 			}
 		});
 
