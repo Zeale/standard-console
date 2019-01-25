@@ -689,9 +689,6 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 	}
 
-	public StandardConsole() {
-	}
-
 	/**
 	 * Adds a channel to this {@link StandardConsole} which will receive user input
 	 * when selected. The user can select the channel that the user wishes to use
@@ -712,6 +709,10 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 	private ObservableList<ConsoleItem> getItems() {
 		return items;
+	}
+
+	public EmbeddedStandardConsoleView getEmbeddedView() {
+		return new EmbeddedStandardConsoleView();
 	}
 
 	public StandardConsoleView getView() {
