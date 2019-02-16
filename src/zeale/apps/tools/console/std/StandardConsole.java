@@ -31,8 +31,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -217,6 +219,19 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 		 */
 
 		private final TextArea input = new TextArea();
+
+		public void setPrimaryColor(Paint color) {
+			setBackground(new Background(new BackgroundFill(color, null, null)));
+		}
+
+		public void setSecondaryColor(Paint color) {
+			input.setBackground(new Background(new BackgroundFill(color, null, null)));
+
+		}
+
+		public void setInputHeight(double height) {
+			input.setPrefHeight(height);
+		}
 
 		private final Button send = new Button("Send");
 		private final VBox options = new VBox(3);
