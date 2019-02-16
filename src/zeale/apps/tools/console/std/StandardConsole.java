@@ -62,9 +62,7 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 		@Override
 		public void start(Stage primaryStage) throws Exception {
-			StandardConsole console = new StandardConsole();
-			console.getView(primaryStage).show();
-
+			new StandardConsole().getView().show();
 		}
 
 	}
