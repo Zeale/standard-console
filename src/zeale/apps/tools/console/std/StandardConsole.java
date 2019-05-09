@@ -288,9 +288,9 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			// new
 			// OptionButton(Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Notepad-v1.png"),
 			// () -> send("~set-output-file"));
-			new DefaultOptionButton(
-					Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Channels-v1.png"),
-					() -> getChannelSelectorMenu().show());
+//			new DefaultOptionButton(
+//					Images.loadImageInBackground("/zeale/apps/tools/resources/graphics/Channels-v1.png"),
+//					() -> getChannelSelectorMenu().show());
 		}
 
 		private EmbeddedStandardConsoleView() {
