@@ -11,8 +11,6 @@ import java.util.Scanner;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.alixia.javalibrary.javafx.images.Images;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -34,6 +32,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -595,6 +594,11 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 	 */
 	public PrintWriter getWriter(Function<? super String, ? extends ConsoleItem> converter) {
 		return getWriter((Consumer<String>) t -> StandardConsole.this.write(converter.apply(t)));
+	}
+
+	public PrintWriter getWriter(Color color, FontWeight weight, FontPosture posture) {
+		return getWriter((Consumer<String>) t -> new ConsoleItem().setColor(color).setWeight(weight).setPosture(posture)
+				.setText(t));
 	}
 
 	@Override
