@@ -11,8 +11,6 @@ import java.util.Scanner;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.alixia.chatroom.api.commands.Command;
-import org.alixia.chatroom.api.commands.CommandManager;
 import org.alixia.javalibrary.javafx.images.Images;
 
 import javafx.application.Application;
@@ -50,9 +48,7 @@ import zeale.apps.tools.console.interfaces.windows.Resizable;
 import zeale.apps.tools.console.interfaces.windows.Showable;
 import zeale.apps.tools.console.std.MessageChannelManager.Channel;
 import zeale.apps.tools.console.std.StandardConsole.StandardConsoleUserInput;
-import zeale.apps.tools.console.std.bots.Taige;
 import zeale.apps.tools.console.std.data.PropertyMap;
-import zeale.apps.tools.console.std.data.PropertyMap.Key;
 import zeale.apps.tools.console.std.menus.ChannelSelectorMenu;
 import zeale.apps.tools.guis.BasicWindow;
 
@@ -511,35 +507,15 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 				.setFontFamily("Monospace").setWeight(FontWeight.BOLD));
 	}
 
-	private final Taige bot = new Taige(getClass().getResourceAsStream("Taige.bot")) {
-
-		@Override
-		protected void outputMessage(String message) {
-			println(message, Color.ORANGE);
-		};
-
-		@Override
-		public void reply(StandardConsoleUserInput input) {
-			println(input.text, Color.ORANGERED);
-			super.reply(input);
-		}
-	};
-
-	private final CommandManager privateCommandManager = new CommandManager("~");
-
 	/*
 	 * STANDARD CONSOLE VIEWS
 	 */
 
 	private final NamedChannel<StandardConsoleUserInput> defaultChannel = new NamedChannel<>("Default Channel",
-			message -> {
-				if (!privateCommandManager.runCommand(message.text))
-					pushInput(new StandardConsoleUserInput(message.text, null));
-			}), botChannel = new NamedChannel<>("Bot Channel", bot::reply),
-			rawChannel = new NamedChannel<>("Raw Text Channel", t -> println(t.text));
+			message -> pushInput(new StandardConsoleUserInput(message.text, null)));
 
 	private final MessageChannelManager<StandardConsoleUserInput> channelManager = new MessageChannelManager<>(
-			defaultChannel, botChannel, rawChannel);
+			defaultChannel);
 
 	private final Map<Consumer<?>, Channel<StandardConsoleUserInput>> userMadeHandlers = new HashMap<>(0);
 
@@ -548,123 +524,6 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 	public ChannelSelectorMenu getChannelSelectorMenu() {
 		return channelSelectorMenu == null ? (channelSelectorMenu = new ChannelSelectorMenu(this, channelManager))
 				: channelSelectorMenu;
-	}
-
-	/*
-	 * COMMANDS
-	 */
-	{
-		privateCommandManager.addCommand(new Command() {
-
-			@Override
-			protected void act(String name, String... args) {
-				// TODO
-				// hide();
-			}
-
-			@Override
-			protected boolean match(String name) {
-				return equalsAnyIgnoreCase(name, "Close", "Quit") || name.equals("X");
-			}
-		});
-		privateCommandManager.addCommand(new Command() {
-
-			@Override
-			protected void act(String name, String... args) {
-				// TODO
-				// stage.setIconified(true);
-			}
-
-			@Override
-			protected boolean match(String name) {
-				return equalsAnyIgnoreCase(name, "minimize", "hide", "iconify");
-			}
-		});
-
-		// TODO Impl.
-		privateCommandManager.addCommand(new Command() {
-
-			@Override
-			protected void act(String name, String... args) {
-				if (args.length < 1)
-					println("Not enough arguments!", Color.FIREBRICK);
-				else
-					println("Window not found.", Color.RED);
-			}
-
-			@Override
-			protected boolean match(String name) {
-				return name.equalsIgnoreCase("open-window");
-			}
-		});
-
-		privateCommandManager.addCommand(new Command() {
-
-			private final PrintWriter writer = getWriter();
-
-			@Override
-			@SuppressWarnings("unchecked")
-			protected void act(String name, String... args) {
-				if (args.length < 1)
-					println("Not enough arguments!", Color.FIREBRICK);
-				else {
-					Key<?> key = StandardPropertyKey.valueOf(args[0]);
-					if (key == null) {
-						print("No property was found with the id: ", Color.FIREBRICK);
-						print(args[0], Color.RED);
-						println(".", Color.FIREBRICK);
-					} else
-					// Handle key being null (meaning that no property by the given ID was found).
-					if (args.length == 2)
-						try {
-							properties.putSafe((Key<String>) key, args[1]);
-							print(key.id, Color.MINTCREAM);
-							print(" was set to a value of ", Color.BROWN);
-							print(args[1], Color.MINTCREAM);
-							println(".", Color.BROWN);
-						} catch (ClassCastException e) {
-							e.printStackTrace(writer);
-							print("Failed to assign the property: ", Color.FIREBRICK);
-							print(key.id, Color.RED);
-							print(" the value: ", Color.FIREBRICK);
-							print(args[1], Color.RED);
-							println(".", Color.FIREBRICK);
-							print(args[1], Color.RED);
-							print(", (a String), is not of the type permitted by the property, ", Color.FIREBRICK);
-							print(key.id, Color.RED);
-							print(", (", Color.FIREBRICK);
-							print(key.type.getCanonicalName(), Color.RED);
-							println(").", Color.FIREBRICK);
-						}
-					else if (args.length == 3) {// Assume conversion, treat args[1] as a cast.
-						// TODO Handle conversion
-					}
-				}
-			}
-
-			@Override
-			protected boolean match(String name) {
-				return name.equalsIgnoreCase("set");
-			}
-		});
-
-		privateCommandManager.addCommand(new Command() {
-
-			@Override
-			protected void act(String name, String... args) {
-				try (PrintWriter writer = getWriter()) {
-					new RuntimeException(
-							"A test exception has been created. This trace has been printed to the console.")
-									.printStackTrace(writer);
-				}
-			}
-
-			@Override
-			protected boolean match(String name) {
-				return name.equalsIgnoreCase("test-exception");
-			}
-		});
-
 	}
 
 	/**
