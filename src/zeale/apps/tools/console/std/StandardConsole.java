@@ -493,6 +493,10 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 	private final ObservableList<ConsoleItem> items = FXCollections
 			.synchronizedObservableList(FXCollections.observableList(new LinkedList<>()));
 
+	public void clear() {
+		items.clear();
+	}
+
 	private final StringProperty input = new SimpleStringProperty();
 	/*
 	 * FIELDS - PROPERTY MAP
