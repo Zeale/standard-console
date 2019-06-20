@@ -53,15 +53,6 @@ import zeale.apps.tools.guis.BasicWindow;
 
 public class StandardConsole extends Console<StandardConsoleUserInput> {
 
-	public final static class App extends Application {
-
-		@Override
-		public void start(Stage primaryStage) throws Exception {
-			new StandardConsole().getView().show();
-		}
-
-	}
-
 	private static abstract class ConsoleWriter extends Writer {
 
 		private volatile boolean closed;
@@ -480,12 +471,7 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			DEFAULT_NODE_BACKGROUND = FXTools.getBackgroundFromColor(Color.gray(0.4));
 
 	private static final Function<String, ConsoleItem> simpleConverter = t -> new ConsoleItem().setColor(Color.ORANGE)
-			.setFontSize(20).setText(t);// DO NOT make this into a method reference; it will cause the text objects
-										// inside the TextFlow to be empty.
-
-	public static void main(String[] args) {
-		Application.launch(App.class, args);
-	}
+			.setFontSize(20).setText(t);
 
 	/*
 	 * FIELDS
@@ -572,37 +558,13 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 		return new PrintWriter(new QuickConsoleWriter(true, handler::accept));
 	}
 
-	/**
-	 * <b>Important Note</b> to the user: For some odd reason that I'm too sleepy to
-	 * think about right now, if your <code>converter</code> is a method reference
-	 * (specifically, the part, of your converter, that sets the text of the
-	 * {@link ConsoleItem} that your converter returns, is a method reference
-	 * (simple e.g.:
-	 *
-	 * <pre>
-	 * <code>getWriter(new ConsoleItem()::setItem()</code>
-	 * </pre>
-	 *
-	 * )), then things that quickly print to the {@link PrintWriter} that you get
-	 * from this method, will end up showing empty {@link Text} objects to the user.
-	 * This goes for the {@link #getWriter(Consumer)} method as well (but I'm sleepy
-	 * and I figured out this problem finally so I'm only typing this once right
-	 * now), and it did go for the {@link #getWriter()} during testing (which used a
-	 * {@link #simpleConverter}, which caused issues for the aforementioned reason.
-	 * Feel free to look at it).
-	 *
-	 * @param converter A custom converter that's given a String and gives back a
-	 *                  {@link ConsoleItem}. The {@link ConsoleItem} will be printed
-	 *                  to the console.
-	 * @return The {@link PrintWriter} you can print to.
-	 */
 	public PrintWriter getWriter(Function<? super String, ? extends ConsoleItem> converter) {
 		return getWriter((Consumer<String>) t -> StandardConsole.this.write(converter.apply(t)));
 	}
 
 	public PrintWriter getWriter(Color color, FontWeight weight, FontPosture posture) {
-		return getWriter((Consumer<String>) t -> new ConsoleItem().setColor(color).setWeight(weight).setPosture(posture)
-				.setText(t));
+		return getWriter((Consumer<String>) t -> StandardConsole.this
+				.write(new ConsoleItem().setColor(color).setWeight(weight).setPosture(posture).setText(t)));
 	}
 
 	@Override
@@ -639,6 +601,10 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 		}
 
+	}
+
+	public PropertyMap getProperties() {
+		return properties;
 	}
 
 }
