@@ -247,6 +247,8 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			wrapper.setBackground(null);
 
 			input.setFont(Font.font("Monospace", 17));
+			input.setId("StandardConsoleInput");
+			send.setId("SendButton");
 
 			flow.setFitToHeight(true);
 			flow.setFitToWidth(true);

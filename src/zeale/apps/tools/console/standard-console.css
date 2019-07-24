@@ -1,9 +1,19 @@
-.text-area .scroll-pane, .text-area .scroll-pane .viewport, .text-area .scroll-pane .content {
+#StandardConsoleInput .scroll-pane, #StandardConsoleInput .scroll-pane .viewport, #StandardConsoleInput .scroll-pane .viewport .content {
     -fx-background-color: transparent;
 }
 
-.text-area {
+#StandardConsoleInput, #SendButton {
+    -fx-background-color: ladder(derive(black, 25%), rgb(34%, 34%, 34%) 0%, black 100%);
+}
+
+#StandardConsoleInput {
     -fx-text-fill: white;
+    -fx-border-color: rgb(17%, 17%, 17%);
+    -fx-border-width: 2;
+}
+
+#StandardConsoleInput:focused {
+	-fx-border-color: black;
 }
 
 .split-pane .split-pane-divider {
