@@ -1,15 +1,17 @@
-.text-area .scroll-pane {
-    -fx-background-color: transparent;
-}
-
-.text-area .scroll-pane .viewport {
-    -fx-background-color: transparent;
-}
-
-.text-area .scroll-pane .content {
+.text-area .scroll-pane, .text-area .scroll-pane .viewport, .text-area .scroll-pane .content {
     -fx-background-color: transparent;
 }
 
 .text-area {
     -fx-text-fill: white;
+}
+
+.split-pane .split-pane-divider {
+	-fx-background-color: transparent;
+}
+.split-pane .split-pane-divider:hover {
+	-fx-background-color: rgba(2%,2%,2%,0.7);
+}
+.split-pane .split-pane-divider:pressed {
+	-fx-background-color: rgba(2%,2%,2%,0.9);
 }

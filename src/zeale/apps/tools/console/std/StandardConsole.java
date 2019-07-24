@@ -11,16 +11,19 @@ import java.util.Scanner;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -28,13 +31,13 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import main.alixia.javalibrary.javafx.tools.FXTools;
@@ -219,36 +222,36 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 		private final Button send = new Button("Send");
 		private final VBox options = new VBox(3);
+		private final StackPane inputWrapper = new StackPane(input, send);
+		private final SplitPane wrapper = new SplitPane(flow, inputWrapper);
 		{
 			screen.setBackground(DEFAULT_WINDOW_BACKGROUND);
 			flow.setBackground(null);
 			setBackground(FXTools.getBackgroundFromColor(new Color(0.3, 0.3, 0.3, 1)));
 
-			FXTools.styleInputs(Color.BLACK, Color.DIMGRAY, -1, send, input);
+			FXTools.styleInputs(new Color(0.17, 0.17, 0.17, 1), Color.BLACK, -1, send, input);
 			FXTools.clearScrollPaneBackground(flow);
 
-			AnchorPane.setBottomAnchor(input, 0d);
-			AnchorPane.setLeftAnchor(input, 0d);
-			AnchorPane.setRightAnchor(input, 0d);
-			input.setPrefHeight(200);
-			input.setMaxHeight(200);
+			StackPane.setAlignment(send, Pos.CENTER_RIGHT);
+			wrapper.setOrientation(Orientation.VERTICAL);
 
-			AnchorPane.setTopAnchor(flow, 20d);
+			AnchorPane.setTopAnchor(wrapper, 20d);
 			AnchorPane.setTopAnchor(options, 20d);// Same as flow
-			AnchorPane.setLeftAnchor(flow, 40d);
-			AnchorPane.setRightAnchor(flow, 40d);
-			AnchorPane.setBottomAnchor(flow, 300d);
+			AnchorPane.setLeftAnchor(wrapper, 40d);
+			AnchorPane.setRightAnchor(wrapper, 40d);
+			AnchorPane.setBottomAnchor(wrapper, 40d);
+			StackPane.setMargin(send, new Insets(0, 50, 0, 0));
 
 			AnchorPane.setRightAnchor(options, 2d);
-			input.getStylesheets().add("zeale/apps/tools/console/standard-console.css");
-
-			AnchorPane.setBottomAnchor(send, 135d);
-			AnchorPane.setRightAnchor(send, 75d);
+			wrapper.getStylesheets().add("zeale/apps/tools/console/standard-console.css");
+			wrapper.setBackground(null);
 
 			input.setFont(Font.font("Monospace", 17));
 
 			flow.setFitToHeight(true);
 			flow.setFitToWidth(true);
+
+			wrapper.getDividers().get(0).setPosition(0.9);
 		}
 
 		/*
@@ -284,7 +287,7 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 		}
 
 		private EmbeddedStandardConsoleView() {
-			getChildren().addAll(input, flow, send, options);
+			getChildren().addAll(wrapper, options);
 		}
 
 //		{
