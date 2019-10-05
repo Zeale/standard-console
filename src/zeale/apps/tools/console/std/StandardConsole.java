@@ -225,6 +225,7 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 		private final StackPane inputWrapper = new StackPane(input, send);
 		private final SplitPane wrapper = new SplitPane(flow, inputWrapper);
 		{
+			input.setWrapText(true);
 			screen.setBackground(DEFAULT_WINDOW_BACKGROUND);
 			flow.setBackground(null);
 			setBackground(FXTools.getBackgroundFromColor(new Color(0.3, 0.3, 0.3, 1)));
