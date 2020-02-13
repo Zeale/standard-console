@@ -207,6 +207,18 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 
 		private final TextArea input = new TextArea();
 
+		public TextArea getInput() {
+			return input;
+		}
+
+		public TextFlow getScreen() {
+			return screen;
+		}
+
+		public Button getSendButton() {
+			return send;
+		}
+
 		public void setPrimaryColor(Paint color) {
 			setBackground(new Background(new BackgroundFill(color, null, null)));
 		}
