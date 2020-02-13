@@ -275,9 +275,13 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 		{
 			input.textProperty().bindBidirectional(StandardConsole.this.input);
 			input.setOnKeyPressed((a) -> {
-				if (!a.isShiftDown() && a.getCode() == KeyCode.ENTER) {
-					send();
-					a.consume();
+				if (a.getCode() == KeyCode.ENTER) {
+					if (a.isShiftDown())
+						input.replaceSelection("\n");
+					else {
+						send();
+						a.consume();
+					}
 				}
 			});
 			send.setOnAction((a) -> send());
