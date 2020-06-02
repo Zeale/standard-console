@@ -611,6 +611,13 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 			getItems().add(item);
 	}
 
+	public void write(int pos, ConsoleItem item) {
+		if (!Platform.isFxApplicationThread())
+			Platform.runLater(() -> write(pos, item));
+		else
+			getItems().add(pos, item);
+	}
+
 	public void write(InputStream content) {
 		write(content, simpleConverter);
 	}
