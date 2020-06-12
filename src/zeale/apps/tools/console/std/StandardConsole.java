@@ -105,19 +105,19 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 				options.getChildren().add(this);
 			}
 
-			private DefaultOptionButton(Image icon, Runnable onClicked) {
+			public DefaultOptionButton(Image icon, Runnable onClicked) {
 				this(new ImageView(icon), onClicked);
 			}
 
-			private DefaultOptionButton(Image icon, String onClicked) {
+			public DefaultOptionButton(Image icon, String onClicked) {
 				this(new ImageView(icon), onClicked);
 			}
 
-			private DefaultOptionButton(ImageView icon, Runnable onClicked) {
+			public DefaultOptionButton(ImageView icon, Runnable onClicked) {
 				super(icon, onClicked);
 			}
 
-			private DefaultOptionButton(ImageView icon, String onClicked) {
+			public DefaultOptionButton(ImageView icon, String onClicked) {
 				this(icon, new Runnable() {
 					@Override
 					public void run() {
@@ -158,22 +158,22 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 				FXTools.styleInputs(Color.BLACK, Color.WHITE, -1, this);
 			}
 
-			private OptionButton(Image icon, Runnable onClicked) {
+			public OptionButton(Image icon, Runnable onClicked) {
 				this(new ImageView(icon), onClicked);
 			}
 
-			private OptionButton(Image icon, String onClicked) {
+			public OptionButton(Image icon, String onClicked) {
 				this(new ImageView(icon), onClicked);
 			}
 
-			private OptionButton(ImageView icon, Runnable onClicked) {
+			public OptionButton(ImageView icon, Runnable onClicked) {
 				setGraphic(icon);
 				icon.setFitHeight(16);
 				icon.setFitWidth(16);
 				setOnAction(a -> onClicked.run());
 			}
 
-			private OptionButton(ImageView icon, String onClicked) {
+			public OptionButton(ImageView icon, String onClicked) {
 				this(icon, new Runnable() {
 					@Override
 					public void run() {
