@@ -11,6 +11,8 @@ import java.util.Scanner;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.alixia.javalibrary.javafx.bindings.BindingTools;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -237,6 +239,8 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 		private final StackPane inputWrapper = new StackPane(input, send);
 		private final SplitPane wrapper = new SplitPane(flow, inputWrapper);
 		{
+			send.opacityProperty().bind(BindingTools.mask(send.hoverProperty(), a -> a ? 1 : 0.2));
+
 			input.setWrapText(true);
 			screen.setBackground(DEFAULT_WINDOW_BACKGROUND);
 			flow.setBackground(null);
