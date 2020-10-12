@@ -30,6 +30,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -278,7 +279,7 @@ public class StandardConsole extends Console<StandardConsoleUserInput> {
 		 */
 		{
 			input.textProperty().bindBidirectional(StandardConsole.this.input);
-			input.setOnKeyPressed((a) -> {
+			input.addEventFilter(KeyEvent.KEY_PRESSED, a -> {
 				if (a.getCode() == KeyCode.ENTER) {
 					if (a.isShiftDown())
 						input.replaceSelection("\n");
